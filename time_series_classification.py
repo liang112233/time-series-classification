@@ -1,3 +1,5 @@
+# https://www.analyticsvidhya.com/blog/2019/01/introduction-time-series-classification/
+import os
 import pandas as pd
 import numpy as np
 # matplotlib inline
@@ -7,7 +9,7 @@ import tensorflow as tf
 gpus = tf.config.experimental.list_physical_devices('GPU')
 for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=1024)])
+tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=4096)])
 
 
 
@@ -19,6 +21,7 @@ from keras.layers import LSTM
 
 from keras.optimizers import Adam
 from keras.models import load_model
+from tensorflow.python.keras.callbacks import ModelCheckpoint
 from keras.callbacks import ModelCheckpoint
 
 df1 = pd.read_csv('/home/liang/PycharmProjects/time-series-classification/MovementAAL/dataset/MovementAAL_RSS_1.csv')
@@ -98,14 +101,30 @@ model.summary()
 
 
 adam = Adam(lr=0.001)
-chk = ModelCheckpoint('best_model.pkl', monitor='val_acc', save_best_only=True, mode='max', verbose=1)
+
+# model_filename = "test-Epoch-{epoch:02d}"
+# checkpoint_path = os.path.join('models/', model_filename)
+
+chk = ModelCheckpoint(
+    'best_model.pkl',
+    monitor='val_acc',
+    verbose=1,
+    save_best_only=False,
+    save_weights_only=False,
+    mode='max')
+
+# chk = ModelCheckpoint('best_model.pkl', monitor='val_acc', save_best_only=True, mode='max', verbose=1)
 model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
-model.fit(train, train_target, epochs=200, batch_size=128, callbacks=[chk], validation_data=(validation,validation_target))
-
-#loading the model and checking accuracy on the test data
+model.fit(train, train_target, epochs=5, batch_size=128, callbacks=[chk], validation_data=(validation,validation_target))
+#
+# # #loading the model and checking accuracy on the test data
 model = load_model('best_model.pkl')
-
+#
 from sklearn.metrics import accuracy_score
 test_preds = model.predict_classes(test)
 accuracy_score(test_target, test_preds)
+print("score",accuracy_score(test_target, test_preds))
+
+
+
 
