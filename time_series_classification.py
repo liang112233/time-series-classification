@@ -107,7 +107,7 @@ adam = Adam(lr=0.001)
 
 chk = ModelCheckpoint(
     'best_model.pkl',
-    monitor='val_acc',
+    monitor='val_accuracy',
     verbose=1,
     save_best_only=False,
     save_weights_only=False,
