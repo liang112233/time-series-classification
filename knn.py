@@ -33,8 +33,11 @@ def getpower(data):
 
 
 #
-path = '/home/liang/PycharmProjects/time-series-classification/data/'
+path = '/home/liang/PycharmProjects/time-series-classification/data_yao/'
 sequences = list()
+sequences1 = list()
+sequences2 = list()
+
 
 for j in range(1,38):
     file_path1 = path + str(j)+'/'
@@ -54,15 +57,21 @@ for j in range(1,38):
             cpuEnergy.append(v[1])
             gpuEnergy.append(v[2])
             dramEnergy.append(v[3])
-        pkgPower = getpower(pkgEnergy)[0:seq_len]
-        cpuPower = getpower(cpuEnergy)
-        gpuPower = getpower(gpuEnergy)
-        dramPower = getpower(dramEnergy)
+        # pkgPower = getpower(pkgEnergy)[0:seq_len]
+        # cpuPower = getpower(cpuEnergy)[0:seq_len]
+        # gpuPower = getpower(gpuEnergy)[0:seq_len]
+        # dramPower = getpower(dramEnergy)[0:seq_len]
 
 
         # power = getpower(df)
         # power = np.diff(energy, axis = 0)
+        # sequences.append(pkgPower)
+        # sequences.append(dramPower)
+        pkgPower = getpower(pkgEnergy)
+        dramPower = getpower(dramEnergy)
+        pkgPower.extend(dramPower)
         sequences.append(pkgPower)
+
 print("load data finished")
 sequences= np.array(sequences)
 
@@ -70,7 +79,10 @@ sequences= np.array(sequences)
 
 
 
-labels = np.loadtxt('/home/liang/PycharmProjects/time-series-classification/data/target_cp')
+
+
+
+labels = np.loadtxt('/home/liang/PycharmProjects/time-series-classification/data_yao/target_cp')
 label = labels[:,1]
 
 # print('shape,label', label.shape, label)
@@ -110,10 +122,11 @@ knn = KNeighborsClassifier(n_neighbors=5)
 # #Predict the response for test dataset
 # y_pred = knn.predict(X_test)
 scores = cross_val_score(knn, sequences, label, cv=10, scoring='accuracy')
-print('Accuracies',scores)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-# # Model Accuracy, how often is the classifier correct?
-# print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 
-print('Accuracy mean',scores.mean())
 
+# sequences = list()
+#
+# sequences.append(1 ,2, 3)
+# print(sequences)
