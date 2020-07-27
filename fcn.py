@@ -32,7 +32,7 @@ tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.expe
 
 
 seq_len = 29999 # each dataset has 2999 samples
-nb_epochs = 100
+nb_epochs = 150
 
 
 
@@ -47,9 +47,13 @@ def getpower(data):
   return power
 
 
+
 #
-path = '/home/liang/PycharmProjects/time-series-classification/data_yao/'
+path = '/home/liang/PycharmProjects/time-series-classification/data/'
 sequences = list()
+sequences1 = list()
+
+
 
 for j in range(1,38):
     file_path1 = path + str(j)+'/'
@@ -86,7 +90,7 @@ sequences= np.array(sequences)
 # plt.plot(power)
 
 
-labels = np.loadtxt('/home/liang/PycharmProjects/time-series-classification/data_yao/target_cp')
+labels = np.loadtxt('/home/liang/PycharmProjects/time-series-classification/data/target_cp')
 label = labels[:,1]
 
 # print('shape,label', label.shape, label)
@@ -103,16 +107,12 @@ dummy_label = np_utils.to_categorical(encoded_label)
 
 num_class_dataset = 37
 num_files_each_class = 100
-# train_data = np.reshape(sequences, (500, seq_len, -1))
 train_data = np.reshape(sequences, (num_class_dataset*num_files_each_class, seq_len))
 
 
 
-
-
-
-
-x_train, x_test, y_train, y_test = train_test_split(train_data, label, test_size = 0.3, random_state = 0)
+#
+x_train, x_test, y_train, y_test = train_test_split(train_data, label, test_size = 0.2, random_state = 0)
 nb_classes = len(np.unique(y_test))
 batch_size = min(x_train.shape[0]/10, 16)
 
@@ -152,6 +152,15 @@ conv3 = keras.layers.Activation('relu')(conv3)
 full = keras.layers.GlobalAveragePooling2D()(conv3)
 out = keras.layers.Dense(nb_classes, activation='softmax')(full)
 
+# chk = ModelCheckpoint(
+#     filepath='best_model.pkl',
+#     monitor='accuracy',
+#     verbose=1,
+#     save_best_only=True,
+#     save_weights_only=False,
+#     mode='max')
+
+
 model = keras.models.Model(inputs=x, outputs=out)
 
 optimizer = keras.optimizers.Adam()
@@ -159,10 +168,104 @@ model.compile(loss='categorical_crossentropy',
               optimizer=optimizer,
               metrics=['accuracy'])
 
-reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5,
-                                              patience=50, min_lr=0.0001)
+reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=50, min_lr=0.0001)
+
 hist = model.fit(x_train, Y_train, batch_size=batch_size, epochs=nb_epochs,
                  verbose=1, validation_data=(x_test, Y_test), callbacks=[reduce_lr])
+
+# hist = model.fit(x_train, Y_train, batch_size=batch_size, epochs=nb_epochs,
+#                  verbose=1, validation_data=(x_test, Y_test), callbacks=[reduce_lr])
 # Print the testing results which has the lowest training loss.
 log = pd.DataFrame(hist.history)
 print(log.loc[log['loss'].idxmin]['loss'], log.loc[log['loss'].idxmin]['accuracy'])
+
+
+# # #loading the model and checking accuracy on the test data
+# model = load_model('best_model.pkl')
+#
+
+
+# file_path1 = '/home/liang/PycharmProjects/time-series-classification/test/bc.edu/1'
+# f = open(file_path, "r")
+# lines = f.readlines()
+# pkgEnergy = []
+# cpuEnergy = []
+# gpuEnergy = []
+# dramEnergy = []
+# for l in lines:
+#     v = l.split('\t')
+#     pkgEnergy.append(v[0])
+#     cpuEnergy.append(v[1])
+#     gpuEnergy.append(v[2])
+#     dramEnergy.append(v[3])
+# pkgPower = getpower(pkgEnergy)[0:seq_len]
+# # cpuPower = getpower(cpuEnergy)
+# # gpuPower = getpower(gpuEnergy)
+# # dramPower = getpower(dramEnergy)
+#
+#
+#         # power = getpower(df)
+#         # power = np.diff(energy, axis = 0)
+
+#
+# for i in range(1, 3):
+#     file_path = '/home/liang/PycharmProjects/time-series-classification/data_yao/37/' + str(i)
+#     # print(file_path)
+#     # energy=np.loadtxt(file_path)
+#     f = open(file_path, "r")
+#     lines = f.readlines()
+#     pkgEnergy = []
+#     cpuEnergy = []
+#     gpuEnergy = []
+#     dramEnergy = []
+#     for l in lines:
+#         v = l.split('\t')
+#         pkgEnergy.append(v[0])
+#         cpuEnergy.append(v[1])
+#         gpuEnergy.append(v[2])
+#         dramEnergy.append(v[3])
+#     pkgPower = getpower(pkgEnergy)[0:seq_len]
+#     cpuPower = getpower(cpuEnergy)
+#     gpuPower = getpower(gpuEnergy)
+#     dramPower = getpower(dramEnergy)
+#
+#     sequences1.append(pkgPower)
+# print("load data finished")
+# sequences1= np.array(sequences1)
+#
+# # print('sequences1',sequences1)
+#
+#
+# x_test_final = np.reshape(sequences1, (2, seq_len,-1))
+#
+# x_test_final = (x_test_final - x_test_final.min()) / (x_test_final.max() - x_test_final.min()) * (nb_classes - 1)
+# #
+# # # Evaluate the model on the test data using `evaluate`
+# print("Evaluate on test data")
+# # results = model.evaluate(x_test, y_test, batch_size=128)
+# # print("test loss, test acc:", results)
+# #
+# # Generate predictions (probabilities -- the output of the last layer)
+# # # on new data using `predict`
+# # print("Generate predictions for 3 samples")
+# predictions = model.predict(x_test_final)
+# print("predictions:", predictions)
+
+
+
+
+#
+# x_test_final = np.reshape(sequences, (2, seq_len,-1))
+# #
+# # #
+# # # # Evaluate the model on the test data using `evaluate`
+# print("Evaluate on test data")
+# # results = model.evaluate(x_test, y_test, batch_size=128)
+# # # print("test loss, test acc:", results)
+# # #
+# # # Generate predictions (probabilities -- the output of the last layer)
+# # # # on new data using `predict`
+# print("Generate predictions for 3 samples")
+# predictions = model.predict(x_test)
+# print("predictions:", predictions)
+# #
