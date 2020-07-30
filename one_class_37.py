@@ -34,7 +34,7 @@ tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.expe
 
 
 seq_len = 29999 # each dataset has 2999 samples
-nb_epochs = 1
+nb_epochs = 100
 
 num_class =37
 num_files_each_class = 100
@@ -64,7 +64,7 @@ for j in range(1,num_class+1):
     file_path1 = path + str(j)+'/'
     for i in range(1,101):
         file_path = file_path1 + str(i)
-        print(file_path)
+        # print(file_path)
         # energy=np.loadtxt(file_path)
         f = open(file_path, "r")
         lines = f.readlines()
@@ -179,6 +179,7 @@ hist = model.fit(x_train, Y_train, batch_size=batch_size, epochs=nb_epochs,
 #
 filepath = './softmax37'
 tf.saved_model.save(model, filepath)
+print('x_train_mean,x_train_std', x_train_mean, x_train_std)
 
 # # # # #loading the model and checking accuracy on the test data
 # model = load_model(filepath, compile = True)
@@ -197,49 +198,49 @@ tf.saved_model.save(model, filepath)
 # print("predictions:", predictions)
 
 
-for i in range(1, 21):
-    file_path = '/home/liang/PycharmProjects/time-series-classification/data/1/' + str(i)
-    # print(file_path)
-    # energy=np.loadtxt(file_path)
-    f = open(file_path, "r")
-    lines = f.readlines()
-    pkgEnergy = []
-    cpuEnergy = []
-    gpuEnergy = []
-    dramEnergy = []
-    for l in lines:
-        v = l.split('\t')
-        pkgEnergy.append(v[0])
-        cpuEnergy.append(v[1])
-        gpuEnergy.append(v[2])
-        dramEnergy.append(v[3])
-    pkgPower = getpower(pkgEnergy)[0:seq_len]
-    cpuPower = getpower(cpuEnergy)
-    gpuPower = getpower(gpuEnergy)
-    dramPower = getpower(dramEnergy)
-
-    sequences1.append(pkgPower)
-print("load data finished")
-sequences1= np.array(sequences1)
-
-# print('sequences1',sequences1)
-
-
-x_test_final = np.reshape(sequences1, (20, seq_len,-1))
-
-# np.reshape(sequences, (num_class_dataset*num_files_each_class, seq_len))
-
-x_test_final = (x_test_final - x_train_mean) / (x_train_std)
-
-
-# x_test_final = (x_test_final - x_test_final.min()) / (x_test_final.max() - x_test_final.min()) * (nb_classes - 1)
-
-# # Evaluate the model on the test data using `evaluate`
-print("Evaluate on test data")
-# results = model.evaluate(x_test, y_test, batch_size=128)
-# print("test loss, test acc:", results)
-# Generate predictions (probabilities -- the output of the last layer)
-# # on new data using `predict`
-# print("Generate predictions for 3 samples")
-predictions = model.predict(x_test_final)
-print("predictions:", predictions)
+# for i in range(1, 21):
+#     file_path = '/home/liang/PycharmProjects/time-series-classification/data/1/' + str(i)
+#     # print(file_path)
+#     # energy=np.loadtxt(file_path)
+#     f = open(file_path, "r")
+#     lines = f.readlines()
+#     pkgEnergy = []
+#     cpuEnergy = []
+#     gpuEnergy = []
+#     dramEnergy = []
+#     for l in lines:
+#         v = l.split('\t')
+#         pkgEnergy.append(v[0])
+#         cpuEnergy.append(v[1])
+#         gpuEnergy.append(v[2])
+#         dramEnergy.append(v[3])
+#     pkgPower = getpower(pkgEnergy)[0:seq_len]
+#     cpuPower = getpower(cpuEnergy)
+#     gpuPower = getpower(gpuEnergy)
+#     dramPower = getpower(dramEnergy)
+#
+#     sequences1.append(pkgPower)
+# print("load data finished")
+# sequences1= np.array(sequences1)
+#
+# # print('sequences1',sequences1)
+#
+#
+# x_test_final = np.reshape(sequences1, (20, seq_len,-1))
+#
+# # np.reshape(sequences, (num_class_dataset*num_files_each_class, seq_len))
+#
+# x_test_final = (x_test_final - x_train_mean) / (x_train_std)
+#
+#
+# # x_test_final = (x_test_final - x_test_final.min()) / (x_test_final.max() - x_test_final.min()) * (nb_classes - 1)
+#
+# # # Evaluate the model on the test data using `evaluate`
+# print("Evaluate on test data")
+# # results = model.evaluate(x_test, y_test, batch_size=128)
+# # print("test loss, test acc:", results)
+# # Generate predictions (probabilities -- the output of the last layer)
+# # # on new data using `predict`
+# # print("Generate predictions for 3 samples")
+# predictions = model.predict(x_test_final)
+# print("predictions:", predictions)
